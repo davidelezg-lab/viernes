@@ -1,7 +1,7 @@
 #include <iostream>
 
 int suma(int a, int b) {
-    return a + b;
+    return a - b;
 }
 
 int main() {
@@ -9,4 +9,3 @@ int main() {
     std::cout << "Resultado: " << resultado << std::endl;
     return 0;
 }
-
