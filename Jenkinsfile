@@ -7,20 +7,40 @@ pipeline {
 
     stages {
 
+        stage('Checkout') {
+            steps {
+                echo 'Obteniendo codigo desde GitHub...'
+            }
+        }
+
+        stage('Clean') {
+            steps {
+                echo 'Limpiando ficheros antiguos...'
+
+                bat 'del /Q *.gcda 2>nul'
+                bat 'del /Q *.gcno 2>nul'
+                bat 'del /Q *.gcov 2>nul'
+                bat 'del /Q resultado-tests.txt 2>nul'
+            }
+        }
+
         stage('Build') {
             steps {
-                echo 'Compilando aplicacion principal con cobertura...'
-                
-                 bat '"C:\\msys64\\ucrt64\\bin\\g++.exe" --coverage main.cpp -o app.exe'
 
-                echo 'Ejecutando aplicacion principal para generar cobertura de main.cpp...'
+                echo 'Compilando aplicacion principal...'
+
+                bat '"C:\\msys64\\ucrt64\\bin\\g++.exe" --coverage main.cpp -o app.exe'
+
+                echo 'Ejecutando aplicacion principal...'
+
                 bat 'app.exe'
             }
         }
 
         stage('Test') {
             steps {
-                echo 'Compilando tests con cobertura...'
+
+                echo 'Compilando tests...'
 
                 bat '"C:\\msys64\\ucrt64\\bin\\g++.exe" --coverage test.cpp -o test.exe'
 
@@ -32,18 +52,15 @@ pipeline {
             }
         }
 
-        stage('Ver ficheros de cobertura') {
+        stage('Coverage') {
             steps {
-                echo 'Mostrando ficheros .gcno y .gcda generados...'
+
+                echo 'Mostrando ficheros de cobertura...'
 
                 bat 'dir *.gcno'
                 bat 'dir *.gcda'
-            }
-        }
 
-        stage('Generar Cobertura') {
-            steps {
-                echo 'Generando informes gcov desde todos los ficheros .gcno...'
+                echo 'Generando informes gcov...'
 
                 bat '''
                 for %%F in (*.gcno) do (
@@ -52,23 +69,26 @@ pipeline {
                 )
                 '''
 
-                echo 'Mostrando informes .gcov generados...'
                 bat 'dir *.gcov'
             }
         }
 
-        stage('Analisis SonarCloud') {
+        stage('SonarCloud') {
             steps {
-                echo 'Enviando analisis a SonarCloud...'
+
+                echo 'Analizando con SonarCloud...'
 
                 withSonarQubeEnv('SonarCloud') {
+
                     bat '"C:\\sonar-scanner\\bin\\sonar-scanner.bat"'
+
                 }
             }
         }
 
         stage('Quality Gate') {
             steps {
+
                 echo 'Esperando resultado del Quality Gate...'
 
                 timeout(time: 5, unit: 'MINUTES') {
@@ -79,10 +99,13 @@ pipeline {
 
         stage('Publish') {
             steps {
+
                 echo 'Publicando artefactos...'
 
-                archiveArtifacts artifacts: 'app.exe,test.exe,resultado-tests.txt,*.gcno,*.gcda,*.gcov',
-                                 fingerprint: true
+                archiveArtifacts(
+                    artifacts: 'app.exe,test.exe,resultado-tests.txt,*.gcov,*.gcno,*.gcda',
+                    fingerprint: true
+                )
             }
         }
     }
