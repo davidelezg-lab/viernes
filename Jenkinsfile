@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    options {
+        skipStagesAfterUnstable()
+    }
+
     stages {
 
         stage('Build') {
@@ -46,6 +50,10 @@ pipeline {
 
         failure {
             echo 'Pipeline fallida.'
+        }
+
+        unstable {
+            echo 'Pipeline inestable.'
         }
     }
 }
