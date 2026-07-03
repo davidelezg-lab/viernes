@@ -11,7 +11,7 @@ pipeline {
             steps {
                 echo 'Compilando aplicacion principal con cobertura...'
                 
-                bat '"C:\gcc\bin\g++.exe" main.cpp -o app.exe'
+                 bat '"C:\\msys64\\ucrt64\\bin\\g++.exe" --coverage main.cpp -o app.exe'
 
                 echo 'Ejecutando aplicacion principal para generar cobertura de main.cpp...'
                 bat 'app.exe'
